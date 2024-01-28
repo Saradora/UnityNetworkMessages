@@ -89,11 +89,17 @@ public static class NetworkMessaging
 
     public static void RegisterEvent<TReturnType>(uint hash, MessageReceiver action)
     {
+        Log.Error($"Registering event:");
         if (!_registeredMessages.ContainsKey(hash))
         {
+            Log.Error($"Create handler hash {hash}");
             _registeredMessages[hash] = MessageHandler.Create<TReturnType>(action);
         }
-        else _registeredMessages[hash].Subscribe<TReturnType>(action);
+        else
+        {
+            Log.Error($"Subscribe handler hash {hash}");
+            _registeredMessages[hash].Subscribe<TReturnType>(action);
+        }
     }
 
     public static void UnregisterEvent(uint hash, MessageReceiver action)

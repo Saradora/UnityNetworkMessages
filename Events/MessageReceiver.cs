@@ -1,4 +1,6 @@
-﻿using Unity.Netcode;
+﻿using System.Diagnostics;
+using Unity.Netcode;
+using UnityNetMessages.Logging;
 
 namespace UnityNetMessages.Events;
 
@@ -14,7 +16,7 @@ public abstract class MessageReceiver : IDisposable
         uint? hash = GetHashInternal();
         if (hash is null)
             throw new NullReferenceException("Cannot register event as it is uninitialized.");
-            
+
         NetworkMessaging.RegisterEvent<TReturnType>(hash.Value, this);
     }
 
@@ -33,7 +35,7 @@ public abstract class MessageReceiver : IDisposable
     }
 
     protected abstract uint? GetHash();
-    protected abstract void OnReceiveMessage(ulong senderId, FastBufferReader buffer);
+    protected abstract void OnReceiveMessage(ulong senderId, FastBufferReader buffer); // todo fix fast buffer not being readable multiple times
     
     protected uint? GetHashInternal()
     {

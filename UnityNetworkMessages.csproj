@@ -15,6 +15,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="OdinSerializer">
+        <HintPath>libs\OdinSerializer.dll</HintPath>
+      </Reference>
+      <Reference Include="Unity.Collections">
+        <HintPath>libs\Unity.Collections.dll</HintPath>
+      </Reference>
       <Reference Include="Unity.Netcode.Runtime">
         <HintPath>libs\Unity.Netcode.Runtime.dll</HintPath>
       </Reference>

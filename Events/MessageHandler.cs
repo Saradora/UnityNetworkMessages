@@ -1,4 +1,5 @@
 ﻿using Unity.Netcode;
+using UnityNetMessages.Logging;
 
 namespace UnityNetMessages.Events;
 
@@ -63,6 +64,7 @@ public class MessageHandler
 
     public void Raise(ulong clientId, FastBufferReader bufferReader)
     {
+        Log.Error($"Raising {clientId}");
         for (int index = _actions.Count - 1; index >= 0; index--)
         {
             var weakRef = _actions[index];
@@ -72,6 +74,7 @@ public class MessageHandler
                 continue;
             }
             
+            Log.Error($"Actually raising {index}");
             ((MessageReceiver)weakRef.Target).Invoke(clientId, bufferReader);
         }
     }
