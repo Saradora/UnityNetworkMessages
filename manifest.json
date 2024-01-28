@@ -1,0 +1,8 @@
+{
+	"name": "UnityMDK",
+	"author": "Saradora",
+	"version_number": "1.1.0",
+	"website_url": "https://github.com/Saradora/UnityMDK/",
+	"description": "Personal C# library for modding Unity games.",
+	"dependencies": []
+}
