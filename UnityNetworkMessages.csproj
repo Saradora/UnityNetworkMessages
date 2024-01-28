@@ -7,7 +7,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <RootNamespace>UnityNetMessages</RootNamespace>
         <LangVersion>10</LangVersion>
-        <AssemblyName>UnityNetMessages</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
