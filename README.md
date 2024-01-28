@@ -20,8 +20,8 @@ For now mostly tested on LAN.
 ### How is it "Vanilla-friendly"?
 
 Most Network APIs use NetworkObject prefabs to run code, which for games that force said prefabs compatibility 
-(e.g. Lethal Company) means that any client who's trying to join a server that doesn't have the same mods will get 
-rejected.
+(e.g. Lethal Company) means that any client who's trying to join a server that doesn't have the same network prefab
+list will get rejected.
 
 In this mod's case, you are free to join a non-modded server!
 
