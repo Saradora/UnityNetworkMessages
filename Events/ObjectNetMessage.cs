@@ -2,8 +2,17 @@
 
 namespace UnityNetMessages.Events;
 
+/// <summary>
+/// Wrapper for an unmanaged message with a unique identifier attached to a NetworkObject.
+/// </summary>
+/// <typeparam name="T">Any base unmanaged type or struct that implements IEquatable</typeparam>
 public class ObjectNetMessage<T> : ObjectNetMessageBase<T> where T : unmanaged, IEquatable<T>
 {
+    /// <summary>
+    /// Wrapper for an unmanaged message with a unique identifier attached to a NetworkObject.
+    /// </summary>
+    /// <param name="name">The static identifier to connect the event.</param>
+    /// <param name="assemblySpecific">Whether to accept sending/receiving messages with this identifier from other assemblies.</param>
     public ObjectNetMessage(string name, NetworkObject targetObject, bool assemblySpecific = false) : base(name, targetObject, assemblySpecific)
     {
     }

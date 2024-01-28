@@ -57,7 +57,7 @@ public class ObjectNetEvent : NetEventBase
         }
 
         _hash = $"obj{_targetObject.NetworkObjectId}+{_baseName}".Hash32();
-        RegisterEvent<Unity.Netcode.NetworkEvent>();
+        RegisterEvent<NetworkEvent>();
     }
 
     private void UnregisterNetworkObject()

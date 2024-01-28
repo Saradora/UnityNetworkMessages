@@ -52,7 +52,7 @@ public abstract class NetEventBase : MessageReceiver
     public void InvokeToServer(NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
         using var writer = GetWriterAndHash(out uint hash);
-        NetworkMessaging.TrySendMessageToServer<Unity.Netcode.NetworkEvent>(hash, writer, delivery);
+        NetworkMessaging.TrySendMessageToServer<NetworkEvent>(hash, writer, delivery);
     }
     
     /// <summary>
@@ -64,7 +64,7 @@ public abstract class NetEventBase : MessageReceiver
     public void InvokeToClient(ulong clientId, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
         using var writer = GetWriterAndHash(out uint hash);
-        NetworkMessaging.TrySendMessageToClient<Unity.Netcode.NetworkEvent>(hash, clientId, writer, delivery);
+        NetworkMessaging.TrySendMessageToClient<NetworkEvent>(hash, clientId, writer, delivery);
     }
     
     /// <summary>
@@ -76,6 +76,6 @@ public abstract class NetEventBase : MessageReceiver
     public void InvokeToAllClients(bool includeHost = false, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
         using var writer = GetWriterAndHash(out uint hash);
-        NetworkMessaging.TrySendMessageToAllClients<Unity.Netcode.NetworkEvent>(hash, writer, includeHost, delivery);
+        NetworkMessaging.TrySendMessageToAllClients<NetworkEvent>(hash, writer, includeHost, delivery);
     }
 }

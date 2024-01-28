@@ -3,11 +3,11 @@
 C# Library that allows sending messages and events inside Unity games that use NetCode for GameObjects without having 
 to create prefabs with NetworkObject components.
 
-Library created mostly for personal usage, I'll add a wiki at some point.
-
-For now mostly tested on LAN.
+Library created mostly for personal usage, I'll add a wiki and some examples at some point.
 
 Network Variables **might** come at some point too.
+
+For now mostly tested on LAN.
 
 ## Features
 

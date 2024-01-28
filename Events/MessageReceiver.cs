@@ -47,6 +47,7 @@ public abstract class MessageReceiver : IDisposable
     
     /// <summary>
     /// Clears the wrapper, releasing the resources and making it unusable.
+    /// Is automatic, it is not necessary to call it.
     /// </summary>
     public void Dispose()
     {
