@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Unity.Netcode;
 using UnityNetMessages.Patches;
-using UnityNetMessaging;
 
 namespace UnityNetMessages.Events;
 
