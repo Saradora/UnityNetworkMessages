@@ -9,7 +9,7 @@ public abstract class MessageReceiver : IDisposable
 {
     private bool _disposed;
 
-    protected void RegisterEvent<TReturnType>()
+    internal void RegisterEvent<TReturnType>()
     {
         uint? hash = GetHashInternal();
         if (hash is null)
@@ -18,7 +18,7 @@ public abstract class MessageReceiver : IDisposable
         NetworkMessaging.RegisterEvent<TReturnType>(hash.Value, this);
     }
 
-    protected void UnregisterEvent()
+    internal void UnregisterEvent()
     {
         uint? hash = GetHashInternal();
         if (hash is null) 
