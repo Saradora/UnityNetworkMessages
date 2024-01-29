@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using OdinSerializer;
+using Unity.Netcode;
 using UnityNetMessages.Logging;
 
 namespace UnityNetMessages.Events;

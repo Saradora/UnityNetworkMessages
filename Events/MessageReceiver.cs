@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using Unity.Netcode;
-using UnityNetMessages.Logging;
+﻿using Unity.Netcode;
 
 namespace UnityNetMessages.Events;
 
@@ -36,6 +34,11 @@ public abstract class MessageReceiver : IDisposable
 
     protected abstract uint? GetHash();
     protected abstract void OnReceiveMessage(ulong senderId, FastBufferReader buffer); // todo fix fast buffer not being readable multiple times
+
+    internal virtual void BetterReceiveData(ulong senderId, object data)
+    {
+        
+    }
     
     protected uint? GetHashInternal()
     {

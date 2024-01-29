@@ -1,4 +1,6 @@
-﻿using Unity.Netcode;
+﻿using OdinSerializer;
+using OdinSerializer.Utilities;
+using Unity.Netcode;
 using UnityNetMessages.Logging;
 
 namespace UnityNetMessages.Events;
@@ -65,6 +67,30 @@ public class MessageHandler
     public void Raise(ulong clientId, FastBufferReader bufferReader)
     {
         Log.Error($"Raising {clientId}");
+        
+        byte[] bytes = new byte[13];
+        using (Cache<CachedMemoryStream> cache = CachedMemoryStream.Claim(bytes))
+        {
+            Cache<BinaryDataReader> cache2 = Cache<BinaryDataReader>.Claim();
+            BinaryDataReader binaryDataReader = cache2.Value;
+            binaryDataReader.Stream = cache.Value.MemoryStream;
+            binaryDataReader.Context = null;
+            binaryDataReader.PrepareNewSerializationSession();
+            IDataReader cachedReader = binaryDataReader;
+            IDisposable cache1 = cache2;
+            try
+            {
+                using Cache<DeserializationContext> deseCache = Cache<DeserializationContext>.Claim();
+                
+                cachedReader.Context = deseCache;
+                object data = Serializer.Get(ReturnType).ReadValueWeak(cachedReader);
+            }
+            finally
+            {
+                cache1.Dispose();
+            }
+        }
+        
         for (int index = _actions.Count - 1; index >= 0; index--)
         {
             var weakRef = _actions[index];
