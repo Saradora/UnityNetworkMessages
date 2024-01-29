@@ -45,8 +45,8 @@ public static class NetworkMessaging
 
     public static FastBufferWriter GetWriter(uint hash, int size)
     {
-        FastBufferWriter writer = new(size + FastBufferWriter.GetWriteSize<uint>(), Allocator.Temp);
-        writer.WriteValueSafe(hash);
+        FastBufferWriter writer = new(size + FastBufferWriter.GetWriteSize<uint>() + sizeof(int), Allocator.Temp);
+        writer.WriteValue(hash);
         return writer;
     }
 

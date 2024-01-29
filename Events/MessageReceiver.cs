@@ -27,13 +27,13 @@ public abstract class MessageReceiver : IDisposable
         NetworkMessaging.UnregisterEvent(hash.Value, this);
     }
 
-    internal void Invoke(ulong senderId, FastBufferReader buffer)
+    internal void Invoke(ulong senderId, object data)
     {
-        OnReceiveMessage(senderId, buffer);
+        OnReceiveMessage(senderId, data);
     }
 
     protected abstract uint? GetHash();
-    protected abstract void OnReceiveMessage(ulong senderId, FastBufferReader buffer); // todo fix fast buffer not being readable multiple times
+    protected abstract void OnReceiveMessage(ulong senderId, object data);
 
     internal virtual void BetterReceiveData(ulong senderId, object data)
     {

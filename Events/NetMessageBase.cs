@@ -30,23 +30,17 @@ public abstract class NetMessageBase<T> : MessageReceiver
     /// <param name="data">The data received.</param>
     public event Action<T> MessageReceivedFromServer;
 
-    protected override void OnReceiveMessage(ulong senderId, FastBufferReader buffer)
+    protected override void OnReceiveMessage(ulong senderId, object data)
     {
-        if (!TryReadBuffer(buffer, out T value))
+        if (data is not T castData)
             return;
         
-        MessageReceived?.Invoke(value, senderId);
+        MessageReceived?.Invoke(castData, senderId);
         if (senderId == NetworkMessaging.ServerClientId)
-            MessageReceivedFromServer?.Invoke(value);
+            MessageReceivedFromServer?.Invoke(castData);
         else
-            MessageReceivedFromClient?.Invoke(value, senderId);
+            MessageReceivedFromClient?.Invoke(castData, senderId);
     }
-
-    protected abstract bool TryReadBuffer(FastBufferReader buffer, out T outValue);
-
-    protected abstract int GetWriteSize(T data);
-
-    protected abstract void WriteToBuffer(T data, FastBufferWriter writer);
 
     private FastBufferWriter GetWriterAndHash(T data, out uint outHash)
     {
@@ -54,8 +48,10 @@ public abstract class NetMessageBase<T> : MessageReceiver
         if (hash is null)
             throw new NullReferenceException("Cannot send as it is uninitialized.");
 
-        var writer = NetworkMessaging.GetWriter(hash.Value, GetWriteSize(data));
-        WriteToBuffer(data, writer);
+        byte[] bytes = SerializationUtility.SerializeValue(data, DataFormat.Binary);
+        var writer = NetworkMessaging.GetWriter(hash.Value, sizeof(byte) * bytes.Length);
+        writer.WriteValue(bytes.Length);
+        writer.WriteBytes(bytes);
         outHash = hash.Value;
         return writer;
     }

@@ -24,7 +24,7 @@ public abstract class NetEventBase : MessageReceiver
     /// </summary>
     public event Action EventReceivedFromServer;
 
-    protected override void OnReceiveMessage(ulong senderId, FastBufferReader buffer)
+    protected override void OnReceiveMessage(ulong senderId, object data)
     {
         EventReceived?.Invoke(senderId);
         if (senderId == NetworkMessaging.ServerClientId)
@@ -40,6 +40,7 @@ public abstract class NetEventBase : MessageReceiver
             throw new NullReferenceException("Cannot send as it is uninitialized.");
 
         var writer = NetworkMessaging.GetWriter(hash.Value, 0);
+        writer.WriteValue(0);
         outHash = hash.Value;
         return writer;
     }

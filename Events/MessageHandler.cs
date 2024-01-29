@@ -2,6 +2,7 @@
 using OdinSerializer.Utilities;
 using Unity.Netcode;
 using UnityNetMessages.Logging;
+using UnityNetMessages.OdinSerializer;
 
 namespace UnityNetMessages.Events;
 
@@ -64,31 +65,32 @@ public class MessageHandler
         }
     }
 
-    public void Raise(ulong clientId, FastBufferReader bufferReader)
+    public void Raise(ulong clientId, FastBufferReader buffer)
     {
         Log.Error($"Raising {clientId}");
         
-        byte[] bytes = new byte[13];
-        using (Cache<CachedMemoryStream> cache = CachedMemoryStream.Claim(bytes))
+        int bufferLength = 0;
+        if (!buffer.TryBeginReadValue(bufferLength))
         {
-            Cache<BinaryDataReader> cache2 = Cache<BinaryDataReader>.Claim();
-            BinaryDataReader binaryDataReader = cache2.Value;
-            binaryDataReader.Stream = cache.Value.MemoryStream;
-            binaryDataReader.Context = null;
-            binaryDataReader.PrepareNewSerializationSession();
-            IDataReader cachedReader = binaryDataReader;
-            IDisposable cache1 = cache2;
-            try
+            Log.Error($"Couldn't read buffer length");
+            return;
+        }
+        
+        buffer.ReadValue(out bufferLength);
+
+        object data = null;
+
+        if (bufferLength > 0)
+        {
+            if (!buffer.TryBeginRead(bufferLength))
             {
-                using Cache<DeserializationContext> deseCache = Cache<DeserializationContext>.Claim();
-                
-                cachedReader.Context = deseCache;
-                object data = Serializer.Get(ReturnType).ReadValueWeak(cachedReader);
+                Log.Error($"Couldn't read buffer");
+                return;
             }
-            finally
-            {
-                cache1.Dispose();
-            }
+            
+            byte[] bytes = new byte[bufferLength];
+            buffer.ReadBytes(ref bytes, bufferLength);
+            data = Serialization.Deserialize(bytes, ReturnType);
         }
         
         for (int index = _actions.Count - 1; index >= 0; index--)
@@ -101,7 +103,7 @@ public class MessageHandler
             }
             
             Log.Error($"Actually raising {index}");
-            ((MessageReceiver)weakRef.Target).Invoke(clientId, bufferReader);
+            ((MessageReceiver)weakRef.Target).Invoke(clientId, data);
         }
     }
 }

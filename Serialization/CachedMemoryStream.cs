@@ -1,7 +1,8 @@
 ﻿using OdinSerializer.Utilities;
 
-namespace UnityNetMessages;
+namespace UnityNetMessages.OdinSerializer;
 
+// just a copy of the internal version from OdinSerializer to publicize c:
 internal sealed class CachedMemoryStream : ICacheNotificationReceiver
 {
     public static int InitialCapacity = 1024;

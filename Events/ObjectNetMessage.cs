@@ -1,90 +1,69 @@
-﻿using Unity.Netcode;
+﻿using System.Reflection;
+using Unity.Netcode;
+using UnityNetMessages.Patches;
 
 namespace UnityNetMessages.Events;
 
-/// <summary>
-/// Wrapper for an unmanaged message with a unique identifier attached to a NetworkObject.
-/// </summary>
-/// <typeparam name="T">Any base unmanaged type or struct that implements IEquatable</typeparam>
-public class ObjectNetMessage<T> : ObjectNetMessageBase<T> where T : unmanaged, IEquatable<T>
+public class ObjectNetMessage<T> : NetMessageBase<T>
 {
-    /// <summary>
-    /// Wrapper for an unmanaged message with a unique identifier attached to a NetworkObject.
-    /// </summary>
-    /// <param name="name">The static identifier to connect the event.</param>
-    /// <param name="assemblySpecific">Whether to accept sending/receiving messages with this identifier from other assemblies.</param>
-    public ObjectNetMessage(string name, NetworkObject targetObject, bool assemblySpecific = false) : base(name, targetObject, assemblySpecific)
+    private uint? _hash;
+    private readonly string _baseName;
+    private readonly NetworkObject _targetObject;
+
+    public ObjectNetMessage(string name, NetworkObject targetObject, bool assemblySpecific = false)
     {
+        if (targetObject == null)
+            throw new NullReferenceException("Cannot create an object event without a target object.");
+
+        _baseName = name;
+        if (assemblySpecific) _baseName = Assembly.GetCallingAssembly().GetName().Name + "+" + _baseName;
+        _targetObject = targetObject;
+        _targetObject.RegisterToObjectIdChanges(OnNetworkObjectIdChanged);
+        RegisterNetworkObject();
     }
 
-    protected override bool TryReadBuffer(FastBufferReader buffer, out T outValue)
+    private void OnNetworkObjectIdChanged(ulong value)
     {
-        outValue = default;
-        if (!buffer.TryBeginReadValue(outValue))
-            return false;
-
-        buffer.ReadValue(out ForceNetworkSerializeByMemcpy<T> value);
-        outValue = value.Value;
-        return true;
+        if (value != 0)
+        {
+            RegisterNetworkObject();
+        }
+        else
+        {
+            Dispose();
+        }
     }
 
-    protected override int GetWriteSize(T data)
+    protected override uint? GetHash()
     {
-        return FastBufferWriter.GetWriteSize<T>();
+        return _hash;
+    }
+    
+    private void RegisterNetworkObject()
+    {
+        if (_targetObject.NetworkObjectId == 0) return;
+        if (_hash.HasValue)
+        {
+            UnregisterNetworkObject();
+        }
+
+        _hash = $"obj{_targetObject.NetworkObjectId}+{_baseName}".Hash32();
+        RegisterEvent<T>();
     }
 
-    protected override void WriteToBuffer(T data, FastBufferWriter writer)
+    private void UnregisterNetworkObject()
     {
-        writer.WriteValueSafe(new ForceNetworkSerializeByMemcpy<T>(data));
-    }
-}
-
-public class ObjectNetStructMessage<T> : ObjectNetMessageBase<T> where T : unmanaged, INetworkSerializeByMemcpy
-{
-    public ObjectNetStructMessage(string name, NetworkObject targetObject, bool assemblySpecific = false) : base(name, targetObject, assemblySpecific)
-    {
+        if (!_hash.HasValue) return;
+        UnregisterEvent();
+        _hash = null;
     }
 
-    protected override bool TryReadBuffer(FastBufferReader buffer, out T outValue)
+    protected override void DoDispose()
     {
-        outValue = default;
-        if (!buffer.TryBeginReadValue(outValue))
-            return false;
-        
-        buffer.ReadValue(out outValue);
-        return true;
-    }
-
-    protected override int GetWriteSize(T data)
-    {
-        return FastBufferWriter.GetWriteSize(data);
-    }
-
-    protected override void WriteToBuffer(T data, FastBufferWriter writer)
-    {
-        writer.WriteValueSafe(data);
-    }
-}
-
-public class ObjectNetMessage : ObjectNetMessageBase<string>
-{
-    public ObjectNetMessage(string name, NetworkObject targetObject, bool assemblySpecific = false) : base(name, targetObject, assemblySpecific)
-    {
-    }
-
-    protected override bool TryReadBuffer(FastBufferReader buffer, out string outValue)
-    {
-        buffer.ReadValueSafe(out outValue);
-        return true;
-    }
-
-    protected override int GetWriteSize(string data)
-    {
-        return FastBufferWriter.GetWriteSize(data);
-    }
-
-    protected override void WriteToBuffer(string data, FastBufferWriter writer)
-    {
-        writer.WriteValueSafe(data);
+        UnregisterNetworkObject();
+        if (_targetObject != null)
+        {
+            _targetObject.UnregisterFromObjectIdChanges(OnNetworkObjectIdChanged);
+        }
     }
 }
