@@ -1,6 +1,4 @@
-﻿using Unity.Netcode;
-
-namespace UnityNetMessages.Events;
+﻿namespace UnityNetMessages.Events;
 
 /// <summary>
 /// Base class for all network events and messages.
