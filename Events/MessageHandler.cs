@@ -63,33 +63,43 @@ public class MessageHandler
         }
     }
 
-    public void Raise(ulong clientId, FastBufferReader buffer)
+    public void RaiseEvent(ulong clientId)
     {
-        Log.Error($"Raising {clientId}");
-        
-        int bufferLength = 0;
-        if (!buffer.TryBeginReadValue(bufferLength))
+        for (int index = _actions.Count - 1; index >= 0; index--)
         {
-            Log.Error($"Couldn't read buffer length");
-            return;
+            var weakRef = _actions[index];
+            if (!weakRef.IsAlive)
+            {
+                _actions.RemoveAt(index);
+                continue;
+            }
+            
+            ((MessageReceiver)weakRef.Target).Invoke(clientId, null);
         }
-        
-        buffer.ReadValue(out bufferLength);
+    }
+
+    public void RaiseMessage(ulong clientId, FastBufferReader buffer)
+    {
+        int bufferLength = buffer.Length - sizeof(byte) - sizeof(uint);
+        if (bufferLength < 0)
+            return;
+
+        if (bufferLength == 0)
+        {
+            RaiseEvent(clientId);
+        }
 
         object data = null;
 
-        if (bufferLength > 0)
+        if (!buffer.TryBeginRead(bufferLength))
         {
-            if (!buffer.TryBeginRead(bufferLength))
-            {
-                Log.Error($"Couldn't read buffer");
-                return;
-            }
-            
-            byte[] bytes = new byte[bufferLength];
-            buffer.ReadBytes(ref bytes, bufferLength);
-            data = Serialization.Deserialize(bytes, ReturnType);
+            Log.Error($"Couldn't read buffer");
+            return;
         }
+        
+        byte[] bytes = new byte[bufferLength];
+        buffer.ReadBytes(ref bytes, bufferLength);
+        data = Serialization.Deserialize(bytes, ReturnType);
         
         for (int index = _actions.Count - 1; index >= 0; index--)
         {
@@ -100,7 +110,6 @@ public class MessageHandler
                 continue;
             }
             
-            Log.Error($"Actually raising {index}");
             ((MessageReceiver)weakRef.Target).Invoke(clientId, data);
         }
     }

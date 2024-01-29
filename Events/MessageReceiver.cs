@@ -32,11 +32,6 @@ public abstract class MessageReceiver : IDisposable
 
     protected abstract uint? GetHash();
     protected abstract void OnReceiveMessage(ulong senderId, object data);
-
-    internal virtual void BetterReceiveData(ulong senderId, object data)
-    {
-        
-    }
     
     protected uint? GetHashInternal()
     {

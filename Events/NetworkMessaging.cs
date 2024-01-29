@@ -4,6 +4,12 @@ using UnityNetMessages.Logging;
 
 namespace UnityNetMessages.Events;
 
+public enum EMessageType : byte
+{
+    Event = 0,
+    Data = 1,
+}
+
 public static class NetworkMessaging
 {
     private static readonly Dictionary<uint, MessageHandler> _registeredMessages = new();
@@ -43,10 +49,25 @@ public static class NetworkMessaging
         }
     }
 
-    public static FastBufferWriter GetWriter(uint hash, int size)
+    public static FastBufferWriter GetWriter(EMessageType messageType, uint hash, int size)
     {
-        FastBufferWriter writer = new(size + FastBufferWriter.GetWriteSize<uint>() + sizeof(int), Allocator.Temp);
-        writer.WriteValue(hash);
+        FastBufferWriter writer;
+        switch (messageType)
+        {
+            case EMessageType.Event:
+                writer = new FastBufferWriter(sizeof(byte) + sizeof(uint), Allocator.Temp);
+                writer.WriteValue(messageType);
+                writer.WriteValue(hash);
+                break;
+            case EMessageType.Data:
+                writer = new FastBufferWriter(sizeof(byte) + sizeof(uint) + size, Allocator.Temp);
+                writer.WriteValue(messageType);
+                writer.WriteValue(hash);
+                break;
+            default:
+                writer = new FastBufferWriter(sizeof(byte), Allocator.Temp);
+                break;
+        }
         return writer;
     }
 
@@ -72,32 +93,54 @@ public static class NetworkMessaging
 
     private static void OnUnnamedMessageReceived(ulong clientId, FastBufferReader bufferReader)
     {
-        uint hash = 0;
-        if (!bufferReader.TryBeginReadValue(hash))
-        {
+        EMessageType messageType = EMessageType.Event;
+        if (!bufferReader.TryBeginReadValue(messageType))
             return;
+        
+        bufferReader.ReadValue(out messageType);
+
+        uint hash = 0;
+        MessageHandler handler;
+        switch (messageType)
+        {
+            case EMessageType.Event:
+                if (!bufferReader.TryBeginReadValue(hash))
+                    return;
+
+                bufferReader.ReadValue(out hash);
+                
+                if (_registeredMessages.TryGetValue(hash, out handler))
+                {
+                    handler.RaiseEvent(clientId);
+                }
+
+                break;
+            case EMessageType.Data:
+                if (!bufferReader.TryBeginReadValue(hash))
+                    return;
+
+                bufferReader.ReadValue(out hash);
+                
+                if (_registeredMessages.TryGetValue(hash, out handler))
+                {
+                    handler.RaiseMessage(clientId, bufferReader);
+                }
+                break;
+            default:
+                break;
         }
         
-        bufferReader.ReadValue(out hash);
-        bufferReader.Seek(FastBufferWriter.GetWriteSize<uint>());
-
-        if (_registeredMessages.TryGetValue(hash, out var handler))
-        {
-            handler.Raise(clientId, bufferReader);
-        }
+        //bufferReader.Seek(FastBufferWriter.GetWriteSize<uint>());
     }
 
     public static void RegisterEvent<TReturnType>(uint hash, MessageReceiver action)
     {
-        Log.Error($"Registering event:");
         if (!_registeredMessages.ContainsKey(hash))
         {
-            Log.Error($"Create handler hash {hash}");
             _registeredMessages[hash] = MessageHandler.Create<TReturnType>(action);
         }
         else
         {
-            Log.Error($"Subscribe handler hash {hash}");
             _registeredMessages[hash].Subscribe<TReturnType>(action);
         }
     }

@@ -7,8 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 //
-### Changed
-- Removed specific message types in favor of more generic ones with OdinSerializer
+
+## [2.0.0] - 2024-01-29
+
+### Added
+- OdinSerializer to allow for more generic messages declarations
+
+### Fixed
+- Fixed messages not being read correctly when multiple users where listening to it
+- Fixed a bug on event
 
 ## [1.0.0] - 2024-01-28
 

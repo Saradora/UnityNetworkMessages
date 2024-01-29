@@ -1,10 +1,11 @@
 {
 	"name": "UnityNetworkMessages",
 	"author": "Saradora",
-	"version_number": "1.0.0",
+	"version_number": "2.0.0",
 	"website_url": "https://github.com/Saradora/UnityNetworkMessages",
 	"description": "API that allows sending messages inside Unity games that use Netcode for GameObjects without having to create Prefabs with NetworkObjects.",
 	"dependencies": [
-		"BepInEx-BepInExPack-5.4.2100"
+		"BepInEx-BepInExPack-5.4.2100",
+		"Lordfirespeed-OdinSerializer-2022.11.9"
 	]
 }

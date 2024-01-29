@@ -39,18 +39,17 @@ public abstract class NetEventBase : MessageReceiver
         if (hash is null)
             throw new NullReferenceException("Cannot send as it is uninitialized.");
 
-        var writer = NetworkMessaging.GetWriter(hash.Value, 0);
-        writer.WriteValue(0);
+        var writer = NetworkMessaging.GetWriter(EMessageType.Event, hash.Value, 0);
         outHash = hash.Value;
         return writer;
     }
 
     /// <summary>
-    /// Invoke the event to the Server.
+    /// Invoke the event on the Server.
     /// Can only be called from a Client.
     /// </summary>
     /// <param name="delivery">The reliability of the delivery.</param>
-    public void InvokeToServer(NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
+    public void InvokeOnServer(NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
         using var writer = GetWriterAndHash(out uint hash);
         NetworkMessaging.TrySendMessageToServer<NetworkEvent>(hash, writer, delivery);
@@ -62,7 +61,7 @@ public abstract class NetEventBase : MessageReceiver
     /// </summary>
     /// <param name="clientId">The client Id who'll receive the event.</param>
     /// <param name="delivery">The reliability of the delivery.</param>
-    public void InvokeToClient(ulong clientId, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
+    public void InvokeOnClient(ulong clientId, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
         using var writer = GetWriterAndHash(out uint hash);
         NetworkMessaging.TrySendMessageToClient<NetworkEvent>(hash, clientId, writer, delivery);
@@ -74,7 +73,7 @@ public abstract class NetEventBase : MessageReceiver
     /// </summary>
     /// <param name="includeHost">Whether or not to include the Host client in the delivery.</param>
     /// <param name="delivery">The reliability of the delivery.</param>
-    public void InvokeToAllClients(bool includeHost = false, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
+    public void InvokeOnAllClients(bool includeHost = false, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
         using var writer = GetWriterAndHash(out uint hash);
         NetworkMessaging.TrySendMessageToAllClients<NetworkEvent>(hash, writer, includeHost, delivery);

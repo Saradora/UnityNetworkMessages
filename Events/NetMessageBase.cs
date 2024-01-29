@@ -42,18 +42,27 @@ public abstract class NetMessageBase<T> : MessageReceiver
             MessageReceivedFromClient?.Invoke(castData, senderId);
     }
 
-    private FastBufferWriter GetWriterAndHash(T data, out uint outHash)
+    private bool TryGetWriterAndHash(T data, out uint outHash, out FastBufferWriter outWriter)
     {
         uint? hash = GetHash();
         if (hash is null)
             throw new NullReferenceException("Cannot send as it is uninitialized.");
 
-        byte[] bytes = SerializationUtility.SerializeValue(data, DataFormat.Binary);
-        var writer = NetworkMessaging.GetWriter(hash.Value, sizeof(byte) * bytes.Length);
-        writer.WriteValue(bytes.Length);
-        writer.WriteBytes(bytes);
+        byte[] bytes;
+        try
+        {
+            bytes = SerializationUtility.SerializeValue(data, DataFormat.Binary);
+        }
+        catch
+        {
+            Log.Exception(new Exception($"Cannot serialize type {data.GetType().Name}"));
+            throw;
+        }
+        
+        outWriter = NetworkMessaging.GetWriter(EMessageType.Data, hash.Value, sizeof(byte) * bytes.Length);
+        outWriter.WriteBytes(bytes);
         outHash = hash.Value;
-        return writer;
+        return true;
     }
 
     /// <summary>
@@ -64,14 +73,19 @@ public abstract class NetMessageBase<T> : MessageReceiver
     /// <param name="delivery">The reliability of the delivery.</param>
     public void SendToServer(T data, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
-        using var writer = GetWriterAndHash(data, out var hash);
-        try
+        if (!TryGetWriterAndHash(data, out var hash, out var writer))
+            return;
+
+        using (writer)
         {
-            NetworkMessaging.TrySendMessageToServer<T>(hash, writer, delivery);
-        }
-        catch (Exception e)
-        {
-            Log.Exception(e);
+            try
+            {
+                NetworkMessaging.TrySendMessageToServer<T>(hash, writer, delivery);
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
+            }
         }
     }
 
@@ -84,14 +98,19 @@ public abstract class NetMessageBase<T> : MessageReceiver
     /// <param name="delivery">The reliability of the delivery.</param>
     public void SendToClient(T data, ulong clientId, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
-        using var writer = GetWriterAndHash(data, out var hash);
-        try
+        if (!TryGetWriterAndHash(data, out var hash, out var writer))
+            return;
+        
+        using (writer)
         {
-            NetworkMessaging.TrySendMessageToClient<T>(hash, clientId, writer, delivery);
-        }
-        catch (Exception e)
-        {
-            Log.Exception(e);
+            try
+            {
+                NetworkMessaging.TrySendMessageToClient<T>(hash, clientId, writer, delivery);
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
+            }
         }
     }
 
@@ -104,14 +123,19 @@ public abstract class NetMessageBase<T> : MessageReceiver
     /// <param name="delivery">The reliability of the delivery.</param>
     public void SendToAllClients(T data, bool includeHost = false, NetworkDelivery delivery = NetworkDelivery.ReliableSequenced)
     {
-        using var writer = GetWriterAndHash(data, out var hash);
-        try
+        if (!TryGetWriterAndHash(data, out var hash, out var writer))
+            return;
+
+        using (writer)
         {
-            NetworkMessaging.TrySendMessageToAllClients<T>(hash, writer, includeHost, delivery);
-        }
-        catch (Exception e)
-        {
-            Log.Exception(e);
+            try
+            {
+                NetworkMessaging.TrySendMessageToAllClients<T>(hash, writer, includeHost, delivery);
+            }
+            catch (Exception e)
+            {
+                Log.Exception(e);
+            }
         }
     }
 }

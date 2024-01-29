@@ -6,7 +6,7 @@ public class GlobalNetMessage<T> : NetMessageBase<T>
 {
     private readonly uint _hash;
 
-    internal GlobalNetMessage(string name, bool assemblySpecific = false)
+    public GlobalNetMessage(string name, bool assemblySpecific = false)
     {
         string messageName = name;
         if (assemblySpecific) messageName = Assembly.GetCallingAssembly().GetName().Name + "+" + messageName;

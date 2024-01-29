@@ -19,7 +19,7 @@ For now mostly tested on LAN.
 
 ### How is it "Vanilla-friendly"?
 
-Most Network APIs use NetworkObject prefabs to run code, which for games that force said prefabs compatibility 
+Most Network APIs i've found use NetworkObject prefabs to run code, which for games that force said prefabs compatibility 
 (e.g. Lethal Company) means that any client who's trying to join a server that doesn't have the same network prefab
 list will get rejected.
 
@@ -36,29 +36,21 @@ will receive the event/data when called.
 
 - ``GlobalNetEvent``
   - Simple event without data.
-- ``GlobalNetMessage``
-  - Message that can transmit a string.
 - ``GlobalNetMessage<T>``
-  - Message that can transmit any unmanaged struct that implements ``IEquatable``. 
-  - (e.g. int, float, Vector3, Quaternion, bool, etc)
-  - Works with ValueTuples. (if unmanaged)
-- ``GlobalNetStructMessage<T>``
-  - Message that can transmit any unmanaged struct that implements ``INetworkSerializeByMemcpy``
+  - Message that can transmit data, tested working with unmanaged primitives, structs and strings.
 
 ### Object event/messages
 
 These classes are registered with a NetworkObject, meaning that 2 events with the same identifier but a different NetworkObject
-will not communicate between them.
+will not communicate between each other.
 
 It also means that the events are only valid during the lifespan of the NetworkObject.
 
 - ``ObjectNetEvent``
   - Simple event without data.
-- ``ObjectNetMessage``
-  - Message that can transmit a string.
 - ``ObjectNetMessage<T>``
-  - Message that can transmit any unmanaged struct that implements ``IEquatable``.
-  - (e.g. int, float, Vector3, Quaternion, bool, etc)
-  - Works with ValueTuples. (if unmanaged)
-- ``ObjectNetStructMessage<T>``
-  - Message that can transmit any unmanaged struct that implements ``INetworkSerializeByMemcpy``
+  - Message that can transmit data, tested working with unmanaged primitives, structs and strings.
+
+## Acknowledgements
+
+I got the idea of using OdinSerializer from [Xilophor](https://github.com/Xilophor)'s LethalNetworkAPI!
