@@ -8,7 +8,7 @@ namespace UnityNetMessages.Events;
 /// </summary>
 public class ObjectNetEvent : NetEventBase
 {
-    private readonly ObjectMessageLink _objectMessageLink;
+    private readonly ObjectMessageLink<NetworkEvent> _objectMessageLink;
 
     /// <summary>
     /// Wrapper for an event (with no arguments) relative to a NetworkObject.
@@ -23,7 +23,7 @@ public class ObjectNetEvent : NetEventBase
         
         if (assemblySpecific) name = Assembly.GetCallingAssembly().GetName().Name + "+" + name;
 
-        _objectMessageLink = new ObjectMessageLink(name, targetObject, this);
+        _objectMessageLink = new ObjectMessageLink<NetworkEvent>(name, targetObject, this);
     }
 
     protected override uint? GetHash()

@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityNetMessages.Patches;
 
 namespace UnityNetMessages.Events;
-public class ObjectMessageLink
+public class ObjectMessageLink<TReturnType>
 {
     public uint? Hash { get; private set; }
     private readonly string _baseName;
@@ -40,7 +40,7 @@ public class ObjectMessageLink
         }
 
         Hash = $"obj{_targetObject.NetworkObjectId}+{_baseName}".Hash32();
-        _messageReceiver.RegisterEvent<NetworkEvent>();
+        _messageReceiver.RegisterEvent<TReturnType>();
     }
 
     private void UnregisterNetworkObject()

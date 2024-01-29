@@ -5,7 +5,7 @@ namespace UnityNetMessages.Events;
 
 public class ObjectNetMessage<T> : NetMessageBase<T>
 {
-    private readonly ObjectMessageLink _objectMessageLink;
+    private readonly ObjectMessageLink<T> _objectMessageLink;
 
     public ObjectNetMessage(string name, NetworkObject targetObject, bool assemblySpecific = false)
     {
@@ -13,7 +13,7 @@ public class ObjectNetMessage<T> : NetMessageBase<T>
             throw new NullReferenceException("Cannot create an object event without a target object.");
 
         if (assemblySpecific) name = Assembly.GetCallingAssembly().GetName().Name + "+" + name;
-        _objectMessageLink = new ObjectMessageLink(name, targetObject, this);
+        _objectMessageLink = new ObjectMessageLink<T>(name, targetObject, this);
     }
 
     protected override uint? GetHash()
