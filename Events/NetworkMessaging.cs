@@ -8,6 +8,10 @@ public enum EMessageType : byte
 {
     Event = 0,
     Data = 1,
+    InstanceVariableRequest = 2,
+    StaticVariableRequest = 3,
+    InstanceVariableSet = 4,
+    StaticVariableSet = 5,
 }
 
 public static class NetworkMessaging
@@ -49,7 +53,7 @@ public static class NetworkMessaging
         }
     }
 
-    public static FastBufferWriter GetWriter(EMessageType messageType, uint hash, int size)
+    public static FastBufferWriter GetWriter(EMessageType messageType, int bufferSize)
     {
         FastBufferWriter writer;
         switch (messageType)
@@ -57,17 +61,21 @@ public static class NetworkMessaging
             case EMessageType.Event:
                 writer = new FastBufferWriter(sizeof(byte) + sizeof(uint), Allocator.Temp);
                 writer.WriteValue(messageType);
-                writer.WriteValue(hash);
                 break;
             case EMessageType.Data:
-                writer = new FastBufferWriter(sizeof(byte) + sizeof(uint) + size, Allocator.Temp);
+                writer = new FastBufferWriter(sizeof(byte) + sizeof(uint) + bufferSize, Allocator.Temp);
                 writer.WriteValue(messageType);
-                writer.WriteValue(hash);
                 break;
             default:
                 writer = new FastBufferWriter(sizeof(byte), Allocator.Temp);
                 break;
         }
+        return writer;
+    }
+
+    internal static FastBufferWriter WriteHash(this FastBufferWriter writer, uint hash)
+    {
+        writer.WriteValue(hash);
         return writer;
     }
 

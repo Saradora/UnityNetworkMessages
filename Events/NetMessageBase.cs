@@ -59,7 +59,7 @@ public abstract class NetMessageBase<T> : MessageReceiver
             throw;
         }
         
-        outWriter = NetworkMessaging.GetWriter(EMessageType.Data, hash.Value, sizeof(byte) * bytes.Length);
+        outWriter = NetworkMessaging.GetWriter(EMessageType.Data, sizeof(byte) * bytes.Length).WriteHash(hash.Value);
         outWriter.WriteBytes(bytes);
         outHash = hash.Value;
         return true;

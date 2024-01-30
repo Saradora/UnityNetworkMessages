@@ -39,7 +39,7 @@ public abstract class NetEventBase : MessageReceiver
         if (hash is null)
             throw new NullReferenceException("Cannot send as it is uninitialized.");
 
-        var writer = NetworkMessaging.GetWriter(EMessageType.Event, hash.Value, 0);
+        var writer = NetworkMessaging.GetWriter(EMessageType.Event, 0).WriteHash(hash.Value);
         outHash = hash.Value;
         return writer;
     }
